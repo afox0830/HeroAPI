@@ -1,4 +1,21 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+//using HeroAPI.Data;
+using HeroAPI.Models;
+using HeroAPI.Data;
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<HeroAPIContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("HeroAPIContext")));
+
+/*
+builder.Services.AddDbContext<HeroAPIContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("HeroAPIContext")));
+*/
+/*
+builder.Services.AddDbContext<HeroAPIContext>(opt =>
+    opt.UseInMemoryDatabase("Hero"));
+*/
 
 // Add services to the container.
 
