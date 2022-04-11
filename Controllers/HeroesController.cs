@@ -24,11 +24,12 @@ namespace HeroAPI.Controllers
             _context = context;
         }
 
+        /*
         // GET: api/Heroes
         [HttpGet]
         public string GetHeroes()
         {
-            Console.WriteLine("getting all...");
+            Console.WriteLine("getting all heroes...");
 
             //Use Eager loading to include all related entities (foreign keys)
             var heroList = _context.Heroes
@@ -37,21 +38,27 @@ namespace HeroAPI.Controllers
 
             return JsonSerializer.Serialize(heroList);
         }
+        */
         
-        /*
         // GET: api/Heroes
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Hero>>> GetHeroes()
         {
             Console.WriteLine("getting...");
-            return await _context.Heroes.ToListAsync();
+            var heroList =  await _context.Heroes
+                .Include(h => h.PrimaryFire).Include(h => h.SecondaryFire)
+                .Include(h => h.Ability1).Include(h => h.Ability2).Include(h => h.Ultimate).ToListAsync();
+
+            return heroList;
         }
-        */
+        
 
         // GET: api/Heroes/5
         [HttpGet("{name}")]
         public async Task<ActionResult<Hero>> GetHero(string name)
         {
+            Console.WriteLine($"getting hero '{name}'...");
+
             //Eagerly load first entity with inputted name
             var hero = await _context.Heroes.Include(h => h.PrimaryFire).Include(h => h.SecondaryFire)
                 .Include(h => h.Ability1).Include(h => h.Ability2).Include(h => h.Ultimate).FirstAsync(h => h.Name == name);
@@ -67,9 +74,10 @@ namespace HeroAPI.Controllers
         // PUT: api/Heroes/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutHero(string id, Hero hero)
+        public async Task<IActionResult> PutHero(string name, Hero hero)
         {
-            if (id != hero.Name)
+            Console.WriteLine($"Updating hero '{name}'...");
+            if (name != hero.Name)
             {
                 return BadRequest();
             }
@@ -82,7 +90,7 @@ namespace HeroAPI.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!HeroExists(id))
+                if (!HeroExists(name))
                 {
                     return NotFound();
                 }
@@ -101,7 +109,7 @@ namespace HeroAPI.Controllers
         public async Task<ActionResult<Hero>> PostHero(Hero hero)
         {
             if (HeroExists(hero.Name)) return Conflict($"A Hero with name '{hero.Name}' already exists!");
-
+            Console.WriteLine($"Adding hero '{hero.Name}'...");
             _context.Heroes.Add(hero);
             try
             {
@@ -129,6 +137,8 @@ namespace HeroAPI.Controllers
         [HttpDelete("{name}")]
         public async Task<IActionResult> DeleteHero(string name)
         {
+
+            Console.WriteLine($"Deleting hero '{name}'...");
             var hero = await _context.Heroes.Include(h => h.PrimaryFire).Include(h => h.SecondaryFire)
                 .Include(h => h.Ability1).Include(h => h.Ability2).Include(h => h.Ultimate).FirstAsync(h => h.Name == name);
 
